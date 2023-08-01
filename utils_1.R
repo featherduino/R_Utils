@@ -16,8 +16,6 @@ Table_names<-function(){
   }
 }
 
-
-
 #######################
 
 library(stringr)
@@ -49,3 +47,30 @@ new_column_name <- "urls_withtime_duration"
 # Changing the name of a specific column
 names(c1)[names(c1) == "l1"] <- new_column_name
 View(c1)
+
+
+####intersect(c1$lead_id,table_site_visits$lead_id))
+table_contacts_email_lead_id<-table_contacts[,c("contact_value","lead_id")]
+
+site_visits_source<-merge(c1,table_site_visits,by.x = 'lead_id',by.y = "lead_id")
+site_visits_source_email<-merge(site_visits_source,table_contacts_email_lead_id,by.x = "lead_id")
+
+
+site_visits_source_email_clean <- site_visits_source_email[, c(
+  "lead_id", "log_type", "log_text", "log_time", "add_time.x",
+  "urls_withtime_duration", "sitevisit_id", "sitevisit_summary", "sitevisit_date",
+  "sitevisit_project_name", "sitevisit_budget_start", "sitevisit_budget_end",
+  "sitevisit_client_profile", "sitevisit_client_comments", "add_time.y", "contact_value"
+)]
+
+library(googlesheets4) 
+ss="https://docs.google.com/spreadsheets/d/1Rv0MUUl9WlkQwrucJ-IO5NomT-k4wFB7wLgZaYWlJUw/edit#gid=895037483"
+sheet_write(site_visits_source_email_clean,ss,sheet = "Sheet5")
+
+X<-site_visits_source_email_clean %>% group_by(lead_id,urls_withtime_duration) %>% summarise(n())
+X$urls_clean_2<- str_replace_all(X$urls_clean, "<.*?>|'>|Name:|\\[.*\\]", "")
+
+
+
+
+
